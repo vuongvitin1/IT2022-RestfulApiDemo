@@ -9,10 +9,13 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
+    # chi dinh truong can serializers
     image = serializers.SerializerMethodField(source='image')
 
+    # obj == course , course la 1 doi tuong course thoi
     def get_image(self, obj):
         request = self.context['request']
+        # khong bat dau bang /static
         if obj.image and not obj.image.name.startswith('/static'):
             path = '/static/%s' % obj.image.name
 
@@ -25,7 +28,9 @@ class CourseSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
+        # chi dinh model
         model = Tag
+        """chi dinh truong hien thi (or fields = "__all__")"""
         fields = ['id', 'name']
 
 

@@ -29,7 +29,7 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
+# BASE_DIR la = ecourse/
 MEDIA_ROOT = '%s/courses/static/' % BASE_DIR
 
 CKEDITOR_UPLOAD_PATH = "images/ckeditor/"
@@ -102,7 +102,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'coursedb',
         'USER': 'root',
-        'PASSWORD': '12345678',
+        'PASSWORD': '123456',
         'HOST': '' # mặc định localhost
     }
 }

@@ -2,8 +2,12 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from ckeditor.fields import RichTextField
 
-
+# Kế thừa lớp user của django để sử dụng các chức năng chứng thực của nó
 class User(AbstractUser):
+    """
+       Những trường có sẵn từ AbstractUser: id, password, last_login, is_superuser,
+       username, first_name, last_name, email, is_staff, is_active, date_joined
+    """
     avatar = models.ImageField(null=True, upload_to='users/%Y/%m')
 
 
@@ -25,12 +29,15 @@ class Category(ModelBase):
 
 class Course(ModelBase):
     subject = models.CharField(max_length=255)
-    description = RichTextField()
+    description = models.CharField(max_length=255)
     image = models.ImageField(null=True, blank=True, upload_to='courses/%Y/%m')
     category = models.ForeignKey(Category, related_name="courses", null=True, on_delete=models.SET_NULL)
 
     class Meta:
+        # Ten khoa hoc khong duoc cung voi ten danh muc
         unique_together = ('subject', 'category')
+        # Sap xep giam theo id
+        # ordering = ["-id"]
 
     def __str__(self):
         return self.subject
@@ -38,16 +45,21 @@ class Course(ModelBase):
 
 class Lesson(ModelBase):
     subject = models.CharField(max_length=255)
+    # content = models.TextField()
     content = RichTextField()
     image = models.ImageField(null=True, upload_to='lessons/%Y/%m')
     course = models.ForeignKey(Course,
                                related_name='lessons',
                                related_query_name='my_lesson',
                                on_delete=models.CASCADE)
-    tags = models.ManyToManyField('Tag')
+    tags = models.ManyToManyField('Tag', related_name="lessons", blank=True)
 
     def __str__(self):
         return self.subject
+
+    class Meta:
+        # Ten bai hoc khong duoc cung voi ten khoa hoc
+        unique_together = ('subject', 'course')
 
 
 class Tag(ModelBase):
