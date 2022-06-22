@@ -50,12 +50,15 @@ class CourseViewSet(viewsets.ViewSet, generics.ListAPIView):
 
     @action(methods=['get'], detail=True, url_path='lessons')
     def get_lessons(self, request, pk):
-        # course = Course.objects.get(pk=pk)
-        # lessons = course.lessons.filter(active=True)
-        lessons = self.get_object().lessons
-
-        kw = request.query_params.get('kw')
-        if kw:
+        # course = Course.objects.get(pk=pk).lessons.filter(active=True)
+        # kw = self.request.query_params.get('kw')
+        # if kw is not None:
+        #     lessons = lessons.filter(subject__icontains=kw)
+        lessons = self.get_object().lessons.filter(active=True)
+        # tu khoa tim kiem q khong duoc trung voi cac tu khoa khac trong course
+        kw = self.request.query_params.get('q')
+        if kw is not None:
+            # icontains -> khong phan biet hoa thuong khi tim kiem
             lessons = lessons.filter(subject__icontains=kw)
 
         return Response(data=LessonSerializer(lessons, many=True, context={'request': request}).data,

@@ -49,6 +49,7 @@ class LessonSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = ['id', 'subject', 'image', 'created_date', 'updated_date', 'course_id', 'tags']
 
+# ke thua LessonSerializer phai viet lai class Meta do k duoc ke thua
 
 class LessonDetailSerializer(LessonSerializer):
     like = serializers.SerializerMethodField()
