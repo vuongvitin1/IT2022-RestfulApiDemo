@@ -1,4 +1,4 @@
-from .models import Category, Course, Lesson, Tag, Comment, User
+from .models import Category, Course, Lesson, Tag, Comment, User, Action, Rating
 from rest_framework import serializers
 
 
@@ -48,6 +48,7 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ['id', 'subject', 'image', 'created_date', 'updated_date', 'course_id', 'tags']
+
 
 # ke thua LessonSerializer phai viet lai class Meta do k duoc ke thua
 
@@ -111,5 +112,13 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'content', 'created_date', 'updated_date', 'user']
 
 
+class ActionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Action
+        fields = ["id", "type", "created_date"]
 
 
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ["id", "rate", "created_date"]

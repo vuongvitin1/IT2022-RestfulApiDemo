@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from ckeditor.fields import RichTextField
 
+
 # Kế thừa lớp user của django để sử dụng các chức năng chứng thực của nó
 class User(AbstractUser):
     """
@@ -79,6 +80,8 @@ class Comment(ModelBase):
 
 
 class ActionBase(models.Model):
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
 
@@ -87,9 +90,22 @@ class ActionBase(models.Model):
         unique_together = ('user', 'lesson')
 
 
-class Like(ActionBase):
-    active = models.BooleanField(default=False)
+class Action(ActionBase):
+    LIKE, HAHA, HEART = range(3)
+    ACTIONS = [
+        (LIKE, 'like'),
+        (HAHA, 'haha'),
+        (HEART, 'heart')
+    ]
+    type = models.PositiveSmallIntegerField(choices=ACTIONS, default=LIKE)
 
 
 class Rating(ActionBase):
-    rate = models.SmallIntegerField(default=0)
+    rate = models.PositiveSmallIntegerField(default=0)
+
+# class Like(ActionBase):
+#     active = models.BooleanField(default=False)
+#
+#
+# class Rating(ActionBase):
+#     rate = models.SmallIntegerField(default=0)

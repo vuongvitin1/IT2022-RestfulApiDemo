@@ -1,7 +1,7 @@
 from rest_framework import viewsets, generics, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Category, Course, Lesson, Comment, User, Like, Rating, Tag
+from .models import Category, Course, Lesson, Comment, User, Rating, Tag, Action, Rating
 from .perms import CommentOwnerPermisson
 from .serializers import (
     CategorySerializer,
@@ -10,7 +10,9 @@ from .serializers import (
     LessonDetailSerializer,
     CommentSerializer,
     CreateCommentSerializer,
-    UserSerializer
+    UserSerializer,
+    ActionSerializer,
+    RatingSerializer
 )
 from .paginators import CoursePaginator
 from django.http import Http404
@@ -70,7 +72,7 @@ class LessonViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPI
     serializer_class = LessonDetailSerializer
 
     def get_permissions(self):
-        if self.action in ['like', 'rating']:
+        if self.action in ['like', 'rating', 'take_action', 'rate']:
             return [permissions.IsAuthenticated()]
 
         return [permissions.AllowAny()]
@@ -83,9 +85,11 @@ class LessonViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPI
         except Http404:
             return Response(status=status.HTTP_404_NOT_FOUND)
         else:
+            # lay tat ca cac tag
             tags = request.data.get("tags")
             if tags is not None:
                 for tag in tags:
+                    # neu chua co thi tao ra co roi thi add vo list tag
                     t, _ = Tag.objects.get_or_create(name=tag)
                     lesson.tags.add(t)
 
@@ -105,16 +109,43 @@ class LessonViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPI
 
         return Response(CommentSerializer(comments, many=True).data, status=status.HTTP_200_OK)
 
-    @action(methods=['post'], url_path='like', detail=False)
-    def like(self, request, pk):
-        lesson = self.get_object()
-        user = request.user
+    @action(methods=['post'], detail=True, url_path='like')
+    def take_action(self, request, pk):
+        try:
+            action_type = int(request.data['type'])
+        except IndexError | ValueError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            ac = Action.objects.create(type=action_type, user=request.user, lesson=self.get_object())
 
-        l, _ = Like.objects.get_or_create(lesson=lesson, user=user)
-        l.active = not l.active
-        l.save()
+            return Response(ActionSerializer(ac).data, status=status.HTTP_200_OK)
 
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['post'], detail=True, url_path='rating')
+    def rate(self, request, pk):
+        try:
+            rating = int(request.data['rating'])
+        except IndexError | ValueError as ex:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            r = Rating.objects.create(rate=rating, user=request.user, lesson=self.get_object())
+
+            return Response(RatingSerializer(r).data, status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+    # @action(methods=['post'], url_path='like', detail=False)
+    # def like(self, request, pk):
+    #     lesson = self.get_object()
+    #     user = request.user
+    #
+    #     l, _ = Like.objects.get_or_create(lesson=lesson, user=user)
+    #     l.active = not l.active
+    #     l.save()
+    #
+    #     return Response(status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], url_path='rating', detail=True)
     def rating(self, request, pk):
