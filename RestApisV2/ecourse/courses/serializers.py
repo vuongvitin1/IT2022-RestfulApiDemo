@@ -1,4 +1,5 @@
-from .models import Category, Course, Lesson, Tag, Comment, User, Action, Rating
+from .models import (Category, Course, Lesson, Tag, Comment, User, Action, Rating,
+                     LessonView)
 from rest_framework import serializers
 
 
@@ -122,3 +123,9 @@ class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = ["id", "rate", "created_date"]
+
+
+class LessonViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LessonView
+        fields = ["id", "views", "lesson"]

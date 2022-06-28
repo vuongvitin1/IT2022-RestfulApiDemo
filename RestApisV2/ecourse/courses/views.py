@@ -1,7 +1,7 @@
 from rest_framework import viewsets, generics, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Category, Course, Lesson, Comment, User, Rating, Tag, Action, Rating
+from .models import Category, Course, Lesson, Comment, User, Rating, Tag, Action, Rating, LessonView
 from .perms import CommentOwnerPermisson
 from .serializers import (
     CategorySerializer,
@@ -12,10 +12,12 @@ from .serializers import (
     CreateCommentSerializer,
     UserSerializer,
     ActionSerializer,
-    RatingSerializer
+    RatingSerializer,
+    LessonViewSerializer
 )
 from .paginators import CoursePaginator
 from django.http import Http404
+from django.db.models import F
 
 
 class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView):
@@ -97,7 +99,7 @@ class LessonViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPI
                 # Sai
                 # return Response(self.serializer_class(lesson, many=True, context={'request': request}).data,
                 #                 status=status.HTTP_200_OK)
-                return Response(self.serializer_class(lesson,  context={'request': request}).data,
+                return Response(self.serializer_class(lesson, context={'request': request}).data,
                                 status=status.HTTP_200_OK)
 
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -135,7 +137,6 @@ class LessonViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPI
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-
     # @action(methods=['post'], url_path='like', detail=False)
     # def like(self, request, pk):
     #     lesson = self.get_object()
@@ -147,19 +148,31 @@ class LessonViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPI
     #
     #     return Response(status=status.HTTP_201_CREATED)
 
-    @action(methods=['post'], url_path='rating', detail=True)
-    def rating(self, request, pk):
-        if 'rate' not in request.data:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+    # @action(methods=['post'], url_path='rating', detail=True)
+    # def rating(self, request, pk):
+    #     if 'rate' not in request.data:
+    #         return Response(status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     lesson = self.get_object()
+    #     user = request.user
+    #
+    #     r, _ = Rating.objects.get_or_create(lesson=lesson, user=user)
+    #     r.rate = int(request.data.get('rate'))
+    #     r.save()
+    #
+    #     return Response(status=status.HTTP_201_CREATED)
+    @action(methods=['get'], detail=True, url_path='views')
+    def incre_view(self, request, pk):
+        v, created = LessonView.objects.get_or_create(lesson=self.get_object())
+        # v.views += 1
+        # trong moi truong phan tan phai
+        v.views = F('views') + 1
 
-        lesson = self.get_object()
-        user = request.user
+        v.save()
+        # cap nhat cho v.views thanh so chu khon phai mac dinh là object
+        v.refresh_from_db()
 
-        r, _ = Rating.objects.get_or_create(lesson=lesson, user=user)
-        r.rate = int(request.data.get('rate'))
-        r.save()
-
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(LessonViewSerializer(v).data, status=status.HTTP_200_OK)
 
 
 class CommentViewSet(viewsets.ViewSet, generics.CreateAPIView,

@@ -49,6 +49,7 @@ class Lesson(ModelBase):
     # content = models.TextField()
     content = RichTextField()
     image = models.ImageField(null=True, upload_to='lessons/%Y/%m')
+    # de trong view cua Coursee duoc phep .lessons vi du lessons = self.get_object().lessons.filter(active=True)
     course = models.ForeignKey(Course,
                                related_name='lessons',
                                related_query_name='my_lesson',
@@ -109,3 +110,9 @@ class Rating(ActionBase):
 #
 # class Rating(ActionBase):
 #     rate = models.SmallIntegerField(default=0)
+class LessonView(models.Model):
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+    views = models.IntegerField(default=0)
+    # 1 lesson thi co duy nhat 1 gia tri trong truong views
+    lesson = models.OneToOneField(Lesson, on_delete=models.CASCADE)
