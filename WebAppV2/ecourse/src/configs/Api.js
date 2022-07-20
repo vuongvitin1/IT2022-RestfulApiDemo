@@ -16,12 +16,12 @@ export const endpoints = {
 }
 
 export const authAxios = () => axios.create({
-    baseURL: 'https://thanhduong.pythonanywhere.com/',
+    baseURL: 'http://127.0.0.1:8000/',
     headers: {
         'Authorization': `Bearer ${cookies.load('access_token')}`
     }
 })
 
 export default axios.create({
-    baseURL: 'https://thanhduong.pythonanywhere.com/'
+    baseURL: 'http://127.0.0.1:8000/'
 }) 

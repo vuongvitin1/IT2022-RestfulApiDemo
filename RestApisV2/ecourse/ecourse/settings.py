@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'debug_toolbar',
-    'oauth2_provider'
+    'oauth2_provider',
+    "corsheaders",
 ]
 
 STATIC_URL = '/static/'
@@ -60,8 +61,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware'
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 INTERNAL_IPS = [
     '127.0.0.1'
@@ -73,6 +77,16 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     )
+}
+
+OAUTH2_INFO = {
+    "client_id": "ZxSeDYfoRQgQ6FHwSv85H8TRfG6HlNAoUNe3njpG",
+    "client_secret": "06pUsITeUpUkD6dcz2inC3RJ18X4UNYFM1PPPe633Tt5fYY3cK9Rftejgy5PmTv9IMXn75W4JjK3S27ELNOM1iTm4MVscBMWJze9ZsoQsptduNiH4o42TMOAujidx4p1"
+}
+
+# Khi test tren react js thi bat len
+OAUTH2_PROVIDER = {
+    'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore'
 }
 
 TEMPLATES = [

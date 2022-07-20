@@ -17,8 +17,8 @@ const Login = () => {
         // lay token
         try {
             const res = await Api.post(endpoints['login'], {
-                'client_id': 'Vbe8euZZQJoWJ2UzW9wDThg4hJEZHHbhFmnfj7UR',
-                'client_secret': 'cVm4w4hSdy4MtwbP4KuNgXkGPeQJ9yrQdBvXHGR6b3e97F2bYqQ81XJ49FEufzjcw4SKwpuOZQiCLsNelHY1MkuYTGBRcSqtWmSlebSUk27WfyDskCB2VeCQihnEKdZ2',
+                'client_id': 'ZxSeDYfoRQgQ6FHwSv85H8TRfG6HlNAoUNe3njpG',
+                'client_secret': '06pUsITeUpUkD6dcz2inC3RJ18X4UNYFM1PPPe633Tt5fYY3cK9Rftejgy5PmTv9IMXn75W4JjK3S27ELNOM1iTm4MVscBMWJze9ZsoQsptduNiH4o42TMOAujidx4p1',
                 'username': username,
                 'password': password,
                 'grant_type': 'password'

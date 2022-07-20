@@ -91,23 +91,24 @@ class ActionBase(models.Model):
         unique_together = ('user', 'lesson')
 
 
-class Action(ActionBase):
-    LIKE, HAHA, HEART = range(3)
-    ACTIONS = [
-        (LIKE, 'like'),
-        (HAHA, 'haha'),
-        (HEART, 'heart')
-    ]
-    type = models.PositiveSmallIntegerField(choices=ACTIONS, default=LIKE)
+# class Action(ActionBase):
+#     LIKE, HAHA, HEART = range(3)
+#     ACTIONS = [
+#         (LIKE, 'like'),
+#         (HAHA, 'haha'),
+#         (HEART, 'heart')
+#     ]
+#     type = models.PositiveSmallIntegerField(choices=ACTIONS, default=LIKE)
 
 
 class Rating(ActionBase):
     rate = models.PositiveSmallIntegerField(default=0)
 
-# class Like(ActionBase):
-#     active = models.BooleanField(default=False)
-#
-#
+
+class Like(ActionBase):
+    active = models.BooleanField(default=False)
+
+
 # class Rating(ActionBase):
 #     rate = models.SmallIntegerField(default=0)
 class LessonView(models.Model):

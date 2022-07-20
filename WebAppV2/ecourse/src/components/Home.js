@@ -38,10 +38,15 @@ const Home = () => {
         loadCourses()
     }, [q])
 
+    console.info("course");
+    console.info(courses);
+
+
     return (
         <Container>
             <h1 className="text-center text-danger">DANH MUC KHOA HOC</h1>
             {courses.length === 0 && <Spinner animation="grow" />}
+
 
             <Row>
                 {courses.map(c => <Item obj={c}  />)}

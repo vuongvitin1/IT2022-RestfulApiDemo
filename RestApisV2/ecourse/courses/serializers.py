@@ -1,4 +1,4 @@
-from .models import (Category, Course, Lesson, Tag, Comment, User, Action, Rating,
+from .models import (Category, Course, Lesson, Tag, Comment, User, Like, Rating,
                      LessonView)
 from rest_framework import serializers
 
@@ -89,10 +89,18 @@ class UserSerializer(serializers.ModelSerializer):
             }
         }
 
+    # day la phuong thuc luu du lieu
     def create(self, validated_data):
         data = validated_data.copy()
 
+        # {
+        #     "username": "bc",
+        #     "password": "12"
+        # }
+
+        # giong nhu User(username="bc", password="12")
         u = User(**data)
+        # bam mat khau
         u.set_password(u.password)
         u.save()
 
@@ -106,17 +114,18 @@ class CreateCommentSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    # tra ve nguyen doi tuong UserSerializer
+    # user = UserSerializer()
 
     class Meta:
         model = Comment
         fields = ['id', 'content', 'created_date', 'updated_date', 'user']
 
 
-class ActionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Action
-        fields = ["id", "type", "created_date"]
+# class ActionSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Like
+#         fields = ["id", "type", "created_date"]
 
 
 class RatingSerializer(serializers.ModelSerializer):

@@ -1,7 +1,11 @@
+from typing import Union
+
 from rest_framework import viewsets, generics, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Category, Course, Lesson, Comment, User, Rating, Tag, Action, Rating, LessonView
+from rest_framework.views import APIView
+
+from .models import Category, Course, Lesson, Comment, User, Rating, Tag, Like, Rating, LessonView
 from .perms import CommentOwnerPermisson
 from .serializers import (
     CategorySerializer,
@@ -11,13 +15,14 @@ from .serializers import (
     CommentSerializer,
     CreateCommentSerializer,
     UserSerializer,
-    ActionSerializer,
+    # ActionSerializer,
     RatingSerializer,
     LessonViewSerializer
 )
 from .paginators import CoursePaginator
 from django.http import Http404
 from django.db.models import F
+from django.conf import settings
 
 
 class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView):
@@ -74,6 +79,12 @@ class LessonViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPI
     serializer_class = LessonDetailSerializer
 
     def get_permissions(self):
+        if self.action == 'add_comment':
+            return [permissions.IsAuthenticated()]
+
+        return [permissions.AllowAny()]
+
+    def get_permissions(self):
         if self.action in ['like', 'rating', 'take_action', 'rate']:
             return [permissions.IsAuthenticated()]
 
@@ -104,6 +115,16 @@ class LessonViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPI
 
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+    @action(methods=['post'], detail=True, url_path="add-comment")
+    def add_comment(self, request, pk):
+        content = request.data.get('content')
+        if content:
+            c = Comment.objects.create(content=content, lesson=self.get_object(), user=request.user)
+
+            return Response(CommentSerializer(c, context={'request': request}).data, status=status.HTTP_201_CREATED)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
     @action(methods=['get'], url_path='comments', detail=True)
     def get_comments(self, request, pk):
         lesson = self.get_object()
@@ -111,24 +132,24 @@ class LessonViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPI
 
         return Response(CommentSerializer(comments, many=True).data, status=status.HTTP_200_OK)
 
-    @action(methods=['post'], detail=True, url_path='like')
-    def take_action(self, request, pk):
-        try:
-            action_type = int(request.data['type'])
-        except IndexError | ValueError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        else:
-            ac = Action.objects.create(type=action_type, user=request.user, lesson=self.get_object())
-
-            return Response(ActionSerializer(ac).data, status=status.HTTP_200_OK)
-
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+    # @action(methods=['post'], detail=True, url_path='like')
+    # def take_action(self, request, pk):
+    #     try:
+    #         action_type = int(request.data['type'])
+    #     except Union[IndexError, ValueError]:
+    #         return Response(status=status.HTTP_400_BAD_REQUEST)
+    #     else:
+    #         ac = Action.objects.create(type=action_type, user=request.user, lesson=self.get_object())
+    #
+    #         return Response(ActionSerializer(ac).data, status=status.HTTP_200_OK)
+    #
+    #     return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['post'], detail=True, url_path='rating')
     def rate(self, request, pk):
         try:
             rating = int(request.data['rating'])
-        except IndexError | ValueError as ex:
+        except Union[IndexError, ValueError] as ex:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
             r = Rating.objects.create(rate=rating, user=request.user, lesson=self.get_object())
@@ -137,16 +158,16 @@ class LessonViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPI
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    # @action(methods=['post'], url_path='like', detail=False)
-    # def like(self, request, pk):
-    #     lesson = self.get_object()
-    #     user = request.user
-    #
-    #     l, _ = Like.objects.get_or_create(lesson=lesson, user=user)
-    #     l.active = not l.active
-    #     l.save()
-    #
-    #     return Response(status=status.HTTP_201_CREATED)
+    @action(methods=['post'], url_path='like', detail=True)
+    def like(self, request, pk):
+        lesson = self.get_object()
+        user = request.user
+
+        l, _ = Like.objects.get_or_create(lesson=lesson, user=user)
+        l.active = not l.active
+        l.save()
+
+        return Response(status=status.HTTP_201_CREATED)
 
     # @action(methods=['post'], url_path='rating', detail=True)
     # def rating(self, request, pk):
@@ -161,6 +182,7 @@ class LessonViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPI
     #     r.save()
     #
     #     return Response(status=status.HTTP_201_CREATED)
+    # API tang so view
     @action(methods=['get'], detail=True, url_path='views')
     def incre_view(self, request, pk):
         v, created = LessonView.objects.get_or_create(lesson=self.get_object())
@@ -180,6 +202,7 @@ class CommentViewSet(viewsets.ViewSet, generics.CreateAPIView,
     queryset = Comment.objects.filter(active=True)
     serializer_class = CreateCommentSerializer
 
+    # user 2 sao van sua comment cua user co id la 1 được?
     def get_permissions(self):
         if self.action in ['update', 'destroy']:
             return [CommentOwnerPermisson()]
@@ -190,3 +213,18 @@ class CommentViewSet(viewsets.ViewSet, generics.CreateAPIView,
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
+
+    def get_permissions(self):
+        if self.action == 'get_current_user':
+            return [permissions.IsAuthenticated()]
+
+        return [permissions.AllowAny()]
+
+    @action(methods=['get'], detail=False, url_path='current-user')
+    def get_current_user(self, request):
+        return Response(self.serializer_class(request.user, context={'request': request}).data, status=status.HTTP_200_OK)
+
+
+class AuthInfo(APIView):
+    def get(self, request):
+        return Response(settings.OAUTH2_INFO, status=status.HTTP_200_OK)

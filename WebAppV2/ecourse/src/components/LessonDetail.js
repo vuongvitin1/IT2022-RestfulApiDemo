@@ -11,6 +11,8 @@ const LessonDetail = () => {
     const [comments, setComments] = useState([])
     const { lessonId } = useParams()
     const [user] = useContext(UserContext)
+    console.log(user)
+
     
 
     useEffect(() => {
@@ -35,7 +37,7 @@ const LessonDetail = () => {
         }
 
         loadComments()
-    }, [comments])
+    }, [])
 
     const like = async () => {
         const res = await authAxios().post(endpoints['like-lesson'](lessonId))
@@ -46,7 +48,6 @@ const LessonDetail = () => {
         const res = await authAxios().post(endpoints['rate-lesson'](lessonId), {
             'rate': r
         })
-        console.info(res.data)
         setLesson(res.data)
     }
 
@@ -93,6 +94,7 @@ const LessonDetail = () => {
 const CommentForm = ({ lessonId, comments, setComments }) => {
     const [content, setContent] = useState()
     const [user] = useContext(UserContext)
+
 
     const addComment = async (event) => {
         event.preventDefault()
